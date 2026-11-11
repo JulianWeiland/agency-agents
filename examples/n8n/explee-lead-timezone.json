@@ -1,0 +1,219 @@
+{
+  "name": "Explee hot lead → time zone",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Explee hot lead → time zone\n1. Activate, then paste the **Production URL** of the webhook into Explee.\n2. On **Apollo: match person**, create a *Header Auth* credential: name `X-Api-Key`, value = your Apollo API key.\n3. Connect your CRM / Slack / booking step after **Build output**.\n\nOutput fields: `region`, `timezone` (IANA), `utc_offset`, `timezone_source`, `timezone_confidence`, `lead_local_time`, `lead_in_business_hours`.",
+        "width": 520,
+        "height": 240
+      },
+      "id": "116173e2-d7cb-550a-968f-d3c26507623c",
+      "name": "Note: setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Only leads that are still unresolved land here\nDACH leads and US leads with an unambiguous area code never cost an Apollo credit. Erased leads are never sent to Apollo. If Apollo errors or finds nobody, the flow falls back to the phone guess, then to US Eastern with confidence `low`.",
+        "width": 520,
+        "height": 180
+      },
+      "id": "b5d39b97-84cc-5728-880f-e2ad2106427e",
+      "name": "Note: enrichment",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "explee-hot-lead",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "5b8ac197-3716-5b09-856f-4d4c5d9d84cb",
+      "name": "Explee webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "25e626b1-bad3-5dec-90ce-4f1dedcdf007"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 1 - free, offline signals: country field, phone prefix, email TLD.\n// Area-code table generated from Google's libphonenumber time zone data.\nconst AREA = {\"America/New_York\": \"201 202 203 207 212 215 216 220 223 227 229 231 234 239 240 248 252 260 267 269 272 276 283 301 302 304 305 313 315 317 321 324 326 329 330 332 336 339 347 351 352 363 364 380 386 401 404 407 410 412 413 419 434 440 443 445 448 463 470 472 475 478 484 502 508 513 516 517 518 540 551 561 567 570 571 582 585 586 603 607 609 610 614 616 617 631 640 645 646 656 667 678 680 681 686 703 704 706 716 717 718 724 727 728 732 734 740 743 754 757 762 765 770 771 772 774 781 786 802 803 804 810 813 814 821 826 828 835 838 839 843 845 848 854 856 857 859 860 862 863 864 865 878 904 908 910 912 914 917 919 929 930 934 937 941 943 947 948 954 959 973 978 980 984 989\", \"America/Chicago\": \"205 210 214 217 218 224 225 228 235 251 254 256 262 274 281 309 312 314 316 318 319 320 325 327 331 334 337 346 353 361 402 405 409 414 417 430 432 447 464 469 479 501 504 507 512 515 531 534 539 557 563 572 573 580 601 608 612 615 618 629 630 636 641 651 659 660 662 682 689 708 712 713 715 726 730 731 737 763 769 773 779 806 815 816 817 830 832 847 870 872 901 903 913 918 920 931 936 938 940 945 952 956 972 975 979 985\", \"America/Los_Angeles\": \"206 209 213 253 279 310 323 341 350 360 369 408 415 424 425 442 458 503 509 510 530 559 562 564 619 626 628 650 657 661 669 702 707 714 725 738 747 760 805 818 820 831 840 858 909 916 925 949 951 971\", \"America/Toronto\": \"226 249 263 273 289 343 354 365 367 382 416 437 438 450 468 514 519 548 579 581 613 647 683 705 742 753 819 873 905 942\", \"America/Denver\": \"303 307 385 406 435 505 575 719 720 748 801 915 970 983\", \"America/Chicago|America/New_York\": \"219 270 423 574 606 812 850 906\", \"America/Vancouver\": \"236 257 604 672 778\", \"America/Edmonton\": \"368 403 587 780 825\", \"America/Winnipeg\": \"204 431 474 584\", \"America/Halifax\": \"428 506 782 902\", \"America/Phoenix\": \"480 520 602 623\", \"America/Chicago|America/Denver\": \"308 620 785\", \"America/Santo_Domingo\": \"809 829 849\", \"America/Boise|America/Denver|America/Los_Angeles\": \"208 775\", \"America/Regina\": \"306 639\", \"America/Chicago|America/Denver|America/North_Dakota/Center\": \"605 701\", \"America/Jamaica\": \"658 876\", \"America/Puerto_Rico\": \"787 939\", \"America/Nassau\": \"242\", \"America/Barbados\": \"246\", \"America/Edmonton|America/Vancouver\": \"250\", \"America/Anguilla\": \"264\", \"America/Antigua\": \"268\", \"America/Tortola\": \"284\", \"America/St_Thomas\": \"340\", \"America/Cayman\": \"345\", \"America/Halifax|America/Toronto\": \"418\", \"Atlantic/Bermuda\": \"441\", \"America/Grenada\": \"473\", \"America/Denver|America/Los_Angeles\": \"541\", \"America/Grand_Turk\": \"649\", \"America/Montserrat\": \"664\", \"Pacific/Saipan\": \"670\", \"Pacific/Guam\": \"671\", \"Pacific/Pago_Pago\": \"684\", \"America/Halifax|America/St_Johns\": \"709\", \"America/Lower_Princes\": \"721\", \"America/St_Lucia\": \"758\", \"America/Dominica\": \"767\", \"America/St_Vincent\": \"784\", \"America/Toronto|America/Winnipeg\": \"807\", \"Pacific/Honolulu\": \"808\", \"America/Edmonton|America/Fort_Nelson|America/Toronto|America/Vancouver|America/Winnipeg\": \"867\", \"America/Port_of_Spain\": \"868\", \"America/St_Kitts\": \"869\", \"America/Puerto_Rico|America/St_Johns\": \"879\", \"America/Adak|America/Anchorage|America/Juneau|Pacific/Honolulu\": \"907\", \"America/Denver|America/Phoenix\": \"928\", \"America/Boise|America/Los_Angeles\": \"986\"};\nconst areaTz = {};\nfor (const [zones, codes] of Object.entries(AREA)) {\n  for (const c of codes.split(' ')) areaTz[c] = zones.split('|');\n}\nconst DACH_TZ = { DE: 'Europe/Berlin', AT: 'Europe/Vienna', CH: 'Europe/Zurich' };\nconst DIAL = { '49': 'DE', '43': 'AT', '41': 'CH' };\nconst COUNTRY_ALIASES = {\n  US: 'US', USA: 'US', 'UNITED STATES': 'US', 'UNITED STATES OF AMERICA': 'US',\n  DE: 'DE', DEU: 'DE', GERMANY: 'DE', DEUTSCHLAND: 'DE',\n  AT: 'AT', AUT: 'AT', AUSTRIA: 'AT', 'ÖSTERREICH': 'AT', OESTERREICH: 'AT',\n  CH: 'CH', CHE: 'CH', SWITZERLAND: 'CH', SCHWEIZ: 'CH', SUISSE: 'CH',\n  CA: 'CA', CAN: 'CA', CANADA: 'CA',\n};\nconst TOLL_FREE = ['800', '833', '844', '855', '866', '877', '888'];\n\nreturn $input.all().map((item) => {\n  const payload = item.json.body ?? item.json;\n  const lead = payload.lead ?? {};\n\n  let country = COUNTRY_ALIASES[String(lead.country ?? '').trim().toUpperCase()] ?? null;\n  const rawCountry = lead.country ?? null;\n\n  // Phone: work out the country calling code and, for +1, the area code.\n  let phone = String(lead.phone ?? '').replace(/[^\\d+]/g, '');\n  if (phone.startsWith('00')) phone = '+' + phone.slice(2);\n  let areaCode = null;\n  let phoneCountry = null;\n  if (phone.startsWith('+1') && phone.length >= 5) {\n    areaCode = phone.slice(2, 5);\n  } else if (phone.startsWith('+')) {\n    phoneCountry = DIAL[phone.slice(1, 3)] ?? null;\n  } else if (!rawCountry || country === 'US' || country === 'CA') {\n    const d = phone.replace(/^1(?=\\d{10}$)/, '');\n    if (d.length === 10) areaCode = d.slice(0, 3);\n  }\n  if (TOLL_FREE.includes(areaCode)) areaCode = null;\n  const phoneZones = areaCode ? areaTz[areaCode] ?? [] : [];\n\n  // Fill a missing country from the phone, then from the email TLD.\n  if (!country && !rawCountry) {\n    const tld = String(lead.email ?? '').split('.').pop().toUpperCase();\n    country = phoneCountry ?? (phoneZones.length ? 'US' : null) ?? (DACH_TZ[tld] ? tld : null);\n  }\n\n  const tz = { timezone: null, source: null, confidence: 'none', candidates: phoneZones };\n  if (DACH_TZ[country]) {\n    Object.assign(tz, { timezone: DACH_TZ[country], source: 'country', confidence: 'high' });\n  } else if (phoneZones.length === 1) {\n    Object.assign(tz, { timezone: phoneZones[0], source: 'phone_area_code', confidence: 'medium' });\n  }\n\n  return {\n    json: {\n      event: payload.event ?? null,\n      delivery_id: payload.delivery_id ?? null,\n      test: payload.test ?? false,\n      lead,\n      country,\n      tz,\n      // Erased leads are never sent to a third-party enrichment API.\n      needs_enrichment: !tz.timezone && !lead.erased,\n    },\n  };\n});"
+      },
+      "id": "5c73e61d-8754-594e-a303-139290e5551d",
+      "name": "Resolve from country + phone",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "11a3e9b2-cd32-5e8d-8632-82812b6421f4",
+              "leftValue": "={{ $json.needs_enrichment }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "661f6409-5a7f-5129-b1ad-c373a130b202",
+      "name": "Needs enrichment?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/people/match",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  linkedin_url: $json.lead.linkedin_url || undefined,\n  email: $json.lead.email || undefined,\n  name: $json.lead.name || undefined,\n  domain: $json.lead.company_domain || undefined,\n  organization_name: $json.lead.company_name || undefined\n}) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "f7c24464-7b50-5930-a95f-0b26930024b7",
+      "name": "Apollo: match person",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        100
+      ],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 2 - use the Apollo match: person location first, company HQ second,\n// then fall back to the phone candidates and finally a country default.\nconst STATES = {\n  AL: ['Alabama', 'America/Chicago'], AK: ['Alaska', 'America/Anchorage'],\n  AZ: ['Arizona', 'America/Phoenix'], AR: ['Arkansas', 'America/Chicago'],\n  CA: ['California', 'America/Los_Angeles'], CO: ['Colorado', 'America/Denver'],\n  CT: ['Connecticut', 'America/New_York'], DE: ['Delaware', 'America/New_York'],\n  DC: ['District of Columbia', 'America/New_York'],\n  FL: ['Florida', 'America/New_York', 'America/Chicago'],\n  GA: ['Georgia', 'America/New_York'], HI: ['Hawaii', 'Pacific/Honolulu'],\n  ID: ['Idaho', 'America/Boise', 'America/Los_Angeles'],\n  IL: ['Illinois', 'America/Chicago'],\n  IN: ['Indiana', 'America/Indiana/Indianapolis', 'America/Chicago'],\n  IA: ['Iowa', 'America/Chicago'], KS: ['Kansas', 'America/Chicago', 'America/Denver'],\n  KY: ['Kentucky', 'America/New_York', 'America/Chicago'],\n  LA: ['Louisiana', 'America/Chicago'], ME: ['Maine', 'America/New_York'],\n  MD: ['Maryland', 'America/New_York'], MA: ['Massachusetts', 'America/New_York'],\n  MI: ['Michigan', 'America/Detroit', 'America/Chicago'],\n  MN: ['Minnesota', 'America/Chicago'], MS: ['Mississippi', 'America/Chicago'],\n  MO: ['Missouri', 'America/Chicago'], MT: ['Montana', 'America/Denver'],\n  NE: ['Nebraska', 'America/Chicago', 'America/Denver'],\n  NV: ['Nevada', 'America/Los_Angeles', 'America/Denver'],\n  NH: ['New Hampshire', 'America/New_York'], NJ: ['New Jersey', 'America/New_York'],\n  NM: ['New Mexico', 'America/Denver'], NY: ['New York', 'America/New_York'],\n  NC: ['North Carolina', 'America/New_York'],\n  ND: ['North Dakota', 'America/Chicago', 'America/Denver'],\n  OH: ['Ohio', 'America/New_York'], OK: ['Oklahoma', 'America/Chicago'],\n  OR: ['Oregon', 'America/Los_Angeles', 'America/Boise'],\n  PA: ['Pennsylvania', 'America/New_York'], RI: ['Rhode Island', 'America/New_York'],\n  SC: ['South Carolina', 'America/New_York'],\n  SD: ['South Dakota', 'America/Chicago', 'America/Denver'],\n  TN: ['Tennessee', 'America/Chicago', 'America/New_York'],\n  TX: ['Texas', 'America/Chicago', 'America/Denver'],\n  UT: ['Utah', 'America/Denver'], VT: ['Vermont', 'America/New_York'],\n  VA: ['Virginia', 'America/New_York'], WA: ['Washington', 'America/Los_Angeles'],\n  WV: ['West Virginia', 'America/New_York'], WI: ['Wisconsin', 'America/Chicago'],\n  WY: ['Wyoming', 'America/Denver'],\n};\nconst stateZones = {};\nfor (const [abbr, [name, ...zones]] of Object.entries(STATES)) {\n  stateZones[abbr] = zones;\n  stateZones[name.toUpperCase()] = zones;\n}\nconst DACH_TZ = {\n  DE: 'Europe/Berlin', GERMANY: 'Europe/Berlin', DEUTSCHLAND: 'Europe/Berlin',\n  AT: 'Europe/Vienna', AUSTRIA: 'Europe/Vienna',\n  CH: 'Europe/Zurich', SWITZERLAND: 'Europe/Zurich',\n};\nconst US_NAMES = ['US', 'USA', 'UNITED STATES', 'UNITED STATES OF AMERICA'];\nconst norm = (v) => String(v ?? '').trim().toUpperCase();\nconst validZone = (z) => {\n  try { new Intl.DateTimeFormat('en-US', { timeZone: z }); return true; } catch (e) { return false; }\n};\n\n// Resolve one Apollo location record (person or organization).\nfunction fromLocation(loc, candidates, leadCountry) {\n  if (!loc) return null;\n  const country = norm(loc.country);\n  if (DACH_TZ[country]) return { timezone: DACH_TZ[country], split: false };\n  const isUS = US_NAMES.includes(country) || (!country && leadCountry === 'US');\n  const zones = isUS ? stateZones[norm(loc.state)] : null;\n  if (!zones) return null;\n  // State spans two zones: let the phone area code break the tie.\n  const overlap = zones.filter((z) => candidates.includes(z));\n  const match = overlap.length === 1 ? overlap[0] : null;\n  return { timezone: match ?? zones[0], split: zones.length > 1 && !match };\n}\n\nconst previous = $('Resolve from country + phone').all();\n\nreturn $input.all().map((item, i) => {\n  const base = (previous[i] ?? previous[0]).json;\n  const person = item.json.person ?? {};\n  const org = person.organization ?? item.json.organization ?? {};\n  const candidates = base.tz.candidates ?? [];\n  const tz = { ...base.tz };\n  const set = (timezone, source, confidence) => Object.assign(tz, { timezone, source, confidence });\n\n  const personLoc = fromLocation(person, candidates, base.country);\n  const orgLoc = fromLocation(org, candidates, base.country);\n\n  if (person.time_zone && validZone(person.time_zone)) {\n    set(person.time_zone, 'apollo_person', 'high');\n  } else if (personLoc) {\n    set(personLoc.timezone, 'apollo_person', personLoc.split ? 'medium' : 'high');\n  } else if (orgLoc) {\n    set(orgLoc.timezone, 'apollo_company_hq', orgLoc.split ? 'low' : 'medium');\n  } else if (candidates.length) {\n    set(candidates[0], 'phone_area_code', 'low');\n  } else if (base.country === 'US') {\n    set('America/New_York', 'default', 'low');\n  }\n\n  const location = {\n    city: person.city ?? org.city ?? null,\n    state: person.state ?? org.state ?? null,\n    country: person.country ?? org.country ?? null,\n  };\n  return {\n    json: {\n      ...base,\n      tz,\n      location,\n      apollo_matched: Boolean(item.json.person),\n      apollo_error: item.json.error ? String(item.json.error.message ?? item.json.error) : null,\n    },\n  };\n});"
+      },
+      "id": "a12d434c-c088-5663-bfba-a925da8fae7c",
+      "name": "Resolve from Apollo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 3 - one flat record for the CRM / Slack / booking step that follows.\nconst DACH = ['Europe/Berlin', 'Europe/Vienna', 'Europe/Zurich'];\n\nreturn $input.all().map((item) => {\n  const { lead, tz, country, location } = item.json;\n  const zone = tz.timezone;\n  const now = new Date();\n  let utcOffset = null, localTime = null, businessHours = null;\n  if (zone) {\n    const part = (opts, type) => new Intl.DateTimeFormat('en-US', { timeZone: zone, ...opts })\n      .formatToParts(now).find((p) => p.type === type).value;\n    utcOffset = part({ timeZoneName: 'longOffset' }, 'timeZoneName').replace('GMT', 'UTC');\n    if (utcOffset === 'UTC') utcOffset = 'UTC+00:00';\n    localTime = now.toLocaleString('sv-SE', { timeZone: zone }).slice(0, 16);\n    const hour = Number(localTime.slice(11, 13));\n    const weekday = part({ weekday: 'short' }, 'weekday');\n    businessHours = !['Sat', 'Sun'].includes(weekday) && hour >= 9 && hour < 17;\n  }\n  let region = 'unknown';\n  if (DACH.includes(zone) || ['DE', 'AT', 'CH'].includes(country)) region = 'DACH';\n  else if (country === 'US' || (zone && /^(America|Pacific)\\//.test(zone))) region = country === 'CA' ? 'CA' : 'US';\n  else if (country || lead.country) region = 'other';\n\n  return {\n    json: {\n      delivery_id: item.json.delivery_id,\n      test: item.json.test,\n      person_id: lead.person_id ?? null,\n      name: lead.name ?? null,\n      email: lead.email ?? null,\n      company_name: lead.company_name ?? null,\n      region,\n      country: country ?? lead.country ?? null,\n      state: location?.state ?? null,\n      city: location?.city ?? null,\n      timezone: zone,\n      utc_offset: utcOffset,\n      timezone_source: tz.source,\n      timezone_confidence: tz.confidence,\n      lead_local_time: localTime,\n      lead_in_business_hours: businessHours,\n      lead,\n    },\n  };\n});"
+      },
+      "id": "8c30bc1b-86d3-54f5-90a9-c5dac876e6af",
+      "name": "Build output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Explee webhook": {
+      "main": [
+        [
+          {
+            "node": "Resolve from country + phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve from country + phone": {
+      "main": [
+        [
+          {
+            "node": "Needs enrichment?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs enrichment?": {
+      "main": [
+        [
+          {
+            "node": "Apollo: match person",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo: match person": {
+      "main": [
+        [
+          {
+            "node": "Resolve from Apollo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve from Apollo": {
+      "main": [
+        [
+          {
+            "node": "Build output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}
