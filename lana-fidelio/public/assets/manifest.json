@@ -1,0 +1,110 @@
+{
+  "files": {
+    "balance.mp4": {
+      "w": 720,
+      "h": 1280,
+      "bytes": 619106
+    },
+    "balance.webp": {
+      "w": 1072,
+      "h": 1920,
+      "bytes": 74108
+    },
+    "bloom.mp4": {
+      "w": 720,
+      "h": 1280,
+      "bytes": 406287
+    },
+    "bloom.webp": {
+      "w": 1072,
+      "h": 1920,
+      "bytes": 93158
+    },
+    "chamber.mp4": {
+      "w": 720,
+      "h": 1280,
+      "bytes": 560984
+    },
+    "chamber.webp": {
+      "w": 1072,
+      "h": 1920,
+      "bytes": 70828
+    },
+    "flower-1.webp": {
+      "w": 500,
+      "h": 493,
+      "bytes": 41474
+    },
+    "flower-2.webp": {
+      "w": 500,
+      "h": 499,
+      "bytes": 43256
+    },
+    "flower-3.webp": {
+      "w": 487,
+      "h": 500,
+      "bytes": 39528
+    },
+    "giftbox-closed.webp": {
+      "w": 1080,
+      "h": 1920,
+      "bytes": 13100
+    },
+    "giftbox-open.webp": {
+      "w": 1080,
+      "h": 1920,
+      "bytes": 44870
+    },
+    "giftbox.mp4": {
+      "w": 720,
+      "h": 1280,
+      "bytes": 344346
+    },
+    "mask.webp": {
+      "w": 900,
+      "h": 595,
+      "bytes": 144966
+    },
+    "paper.webp": {
+      "w": 1200,
+      "h": 1490,
+      "bytes": 43324
+    },
+    "portal.mp4": {
+      "w": 720,
+      "h": 1280,
+      "bytes": 529444
+    },
+    "portal.webp": {
+      "w": 1072,
+      "h": 1920,
+      "bytes": 72278
+    },
+    "scorpio.webp": {
+      "w": 1072,
+      "h": 1920,
+      "bytes": 68732
+    },
+    "sea.mp4": {
+      "w": 720,
+      "h": 1280,
+      "bytes": 373418
+    },
+    "sea.webp": {
+      "w": 1072,
+      "h": 1920,
+      "bytes": 202964
+    },
+    "signature-ink.png": {
+      "w": 676,
+      "h": 217,
+      "bytes": 106211
+    },
+    "signature-mask.png": {
+      "w": 676,
+      "h": 217,
+      "bytes": 14732
+    }
+  },
+  "missing": []
+}

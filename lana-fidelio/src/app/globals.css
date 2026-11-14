@@ -1,0 +1,480 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   LANA — The Fidelio Secret · design tokens
+   `static` = always emit every token as a CSS variable (var(--color-ruby) etc.
+   can be used in inline styles / SVG / canvas even if no utility references it).
+   ───────────────────────────────────────────────────────────────────────────── */
+@theme static {
+  /* World A — The Midnight Chamber */
+  --color-ruby: #850c30;
+  --color-ruby-bright: #b3123f;
+  --color-ruby-deep: #5a0820;
+  --color-burgundy: #280f1d;
+  --color-plum: #160f1c;
+  --color-velvet: #0b070e;
+  /* World B — Lana's Royal Universe */
+  --color-blush: #f4b7c3;
+  --color-softpink: #fbe3e7;
+  --color-ivory: #fff8f0;
+  --color-rosegold: #c98d93;
+  --color-pearl: #f6efe9;
+  /* Shared metals & inks */
+  --color-gold: #d7b47b;
+  --color-gold-light: #f0dcb4;
+  --color-gold-deep: #a47e45; /* gold that is still legible on ivory/blush */
+  --color-ink: #4a1526; /* body text on pink/ivory */
+  --color-ink-soft: #7a4353; /* secondary text on pink/ivory */
+  --color-leaf: #8fae84; /* quilled-leaf green */
+
+  --font-display: var(--font-cormorant), "Cormorant Garamond", "Times New Roman", Georgia, serif;
+  --font-ui: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-script: var(--font-marck), "Marck Script", "Snell Roundhand", cursive;
+  --font-sans: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+
+  --ease-velvet: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-curtain: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --animate-shimmer: shimmer 5.5s var(--ease-velvet) infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-flicker: flicker 3.2s ease-in-out infinite;
+  --animate-slow-glow: slow-glow 5s ease-in-out infinite;
+  --animate-fade-in: fade-in 0.9s var(--ease-velvet) both;
+  --animate-fade-up: fade-up 0.9s var(--ease-velvet) both;
+  --animate-twinkle: twinkle 3.6s ease-in-out infinite;
+
+  /* background-position sweep — pair with a 200%-wide gradient (see .text-gold-foil, .sheen) */
+  @keyframes shimmer {
+    0% { background-position: 120% 0; }
+    55%, 100% { background-position: -120% 0; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(0, -8px, 0); }
+  }
+  /* candle flicker — apply to a glow element */
+  @keyframes flicker {
+    0%, 100% { opacity: 0.92; transform: scale(1); }
+    18% { opacity: 0.78; transform: scale(0.985); }
+    34% { opacity: 1; transform: scale(1.01); }
+    52% { opacity: 0.84; transform: scale(0.99); }
+    71% { opacity: 0.97; transform: scale(1.005); }
+    86% { opacity: 0.8; transform: scale(0.99); }
+  }
+  @keyframes slow-glow {
+    0%, 100% { opacity: 0.55; filter: brightness(1); }
+    50% { opacity: 1; filter: brightness(1.18); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translate3d(0, 10px, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 1; }
+  }
+}
+
+/* keyframes used only by component classes below */
+@keyframes btn-sheen {
+  0%, 62% { transform: translateX(-130%) skewX(-18deg); }
+  88%, 100% { transform: translateX(330%) skewX(-18deg); }
+}
+@keyframes quill-unfurl {
+  0% { opacity: 0; transform: scale(0.15) rotate(-70deg); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes signature-write {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* ───────────────────────────── base ───────────────────────────── */
+@layer base {
+  html {
+    background: #160f1c;
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+    scroll-behavior: auto;
+    /* world variables — switch with <html data-world="midnight|royal"> */
+    --world-bg: #160f1c;
+    --world-fg: #f3e7d6;
+    --world-muted: rgba(243, 231, 214, 0.66);
+    --world-accent: #d7b47b;
+    --surround: #0b070e;
+  }
+  html[data-world="royal"] {
+    color-scheme: light;
+    --world-bg: #fbe3e7;
+    --world-fg: #4a1526;
+    --world-muted: #7a4353;
+    --world-accent: #850c30;
+  }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--world-bg);
+    color: var(--world-fg);
+    font-family: var(--font-ui);
+    font-feature-settings: "kern", "liga";
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+    overflow-x: hidden;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    transition: background-color 1.1s var(--ease-velvet);
+  }
+  /* Desktop / tablet: phone-width stage on an elegant dark surround */
+  @media (min-width: 520px) {
+    body {
+      background:
+        radial-gradient(120% 80% at 50% 0%, rgba(133, 12, 48, 0.16), transparent 60%),
+        radial-gradient(90% 60% at 50% 100%, rgba(215, 180, 123, 0.07), transparent 65%),
+        var(--surround);
+    }
+  }
+  ::selection {
+    background: rgba(215, 180, 123, 0.35);
+    color: inherit;
+  }
+  button,
+  [role="button"],
+  a {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  button {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  button:disabled {
+    cursor: default;
+  }
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 1.5px solid var(--world-accent);
+    outline-offset: 3px;
+  }
+  /* iOS zooms inputs below 16px — never go smaller */
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+    border-radius: 0;
+  }
+  img,
+  video,
+  canvas,
+  svg {
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+/* ───────────────────────────── layout utilities ───────────────────────────── */
+
+/* The phone-width theatre. Full-bleed on phones; centred 480px column on larger screens. */
+@utility stage {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  min-height: 100dvh;
+  margin-inline: auto;
+  overflow-x: clip;
+  background: var(--world-bg);
+  color: var(--world-fg);
+  transition: background-color 1.1s var(--ease-velvet), color 0.8s var(--ease-velvet);
+  isolation: isolate;
+  @media (min-width: 520px) {
+    box-shadow:
+      0 0 0 1px rgba(215, 180, 123, 0.16),
+      0 40px 120px -20px rgba(0, 0, 0, 0.85),
+      0 0 160px -40px rgba(133, 12, 48, 0.45);
+  }
+}
+
+/* Root of every chapter: fills the stage, column layout, safe-area aware padding. */
+@utility chapter {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100dvh;
+  overflow: hidden;
+  padding-top: max(1.25rem, env(safe-area-inset-top));
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+}
+
+@utility pt-safe {
+  padding-top: max(1.25rem, env(safe-area-inset-top));
+}
+@utility pb-safe {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+@utility px-safe {
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
+}
+
+/* ───────────────────────────── type utilities ───────────────────────────── */
+
+/* Wide letter-spaced small caps for labels: THE MIDNIGHT INVITATION */
+@utility label-caps {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  /* optical compensation for the trailing letter-space */
+  margin-right: -0.34em;
+}
+
+/* Display headline defaults (Cormorant) */
+@utility headline {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+
+/* Calligraphic accent — use sparingly */
+@utility script {
+  font-family: var(--font-script);
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+/* Champagne-gold foil text (dark world). Add `animate-shimmer` for a slow light sweep. */
+@utility text-gold-foil {
+  background-image: linear-gradient(
+    100deg,
+    #a47e45 0%,
+    #d7b47b 22%,
+    #fbeccb 40%,
+    #d7b47b 58%,
+    #b08a50 78%,
+    #e6cb98 100%
+  );
+  background-size: 220% 100%;
+  background-position: 30% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Ruby foil text (pink world) */
+@utility text-ruby-foil {
+  background-image: linear-gradient(100deg, #5a0820 0%, #850c30 30%, #c2254f 50%, #850c30 70%, #5a0820 100%);
+  background-size: 220% 100%;
+  background-position: 30% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ───────────────────────────── surfaces ───────────────────────────── */
+
+/* Blush handmade paper (cards, decree, sheets in the royal world) */
+@utility paper {
+  background-color: #fbe3e7;
+  background-image:
+    radial-gradient(120% 90% at 20% 0%, rgba(255, 248, 240, 0.95), transparent 55%),
+    radial-gradient(100% 80% at 100% 100%, rgba(244, 183, 195, 0.55), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .52 0 0 0 0 .05 0 0 0 0 .19 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  color: #4a1526;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    0 1px 0 rgba(255, 255, 255, 0.7),
+    0 18px 50px -18px rgba(133, 12, 48, 0.35);
+}
+
+/* Dark velvet glass panel (cards / inputs in the midnight world) */
+@utility velvet {
+  background:
+    linear-gradient(180deg, rgba(40, 15, 29, 0.82), rgba(22, 15, 28, 0.9));
+  border: 1px solid rgba(215, 180, 123, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(240, 220, 180, 0.08),
+    0 20px 60px -20px rgba(0, 0, 0, 0.8);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+/* Fallback gradients for <Backdrop fallbackClassName="…"> */
+@utility bg-midnight {
+  background:
+    radial-gradient(90% 55% at 50% 38%, rgba(133, 12, 48, 0.55), transparent 70%),
+    radial-gradient(60% 40% at 50% 100%, rgba(215, 180, 123, 0.1), transparent 70%),
+    linear-gradient(180deg, #0b070e 0%, #160f1c 45%, #280f1d 100%);
+}
+@utility bg-ruby-crystal {
+  background:
+    conic-gradient(from 210deg at 50% 42%, #280f1d, #850c30, #3a0a1c, #b3123f, #280f1d, #6d0a28, #280f1d),
+    #160f1c;
+}
+@utility bg-royal {
+  background:
+    radial-gradient(90% 55% at 50% 22%, rgba(255, 248, 240, 0.95), transparent 70%),
+    radial-gradient(80% 50% at 85% 100%, rgba(244, 183, 195, 0.75), transparent 70%),
+    radial-gradient(70% 45% at 0% 85%, rgba(215, 180, 123, 0.22), transparent 70%),
+    linear-gradient(180deg, #fff8f0 0%, #fbe3e7 55%, #f6c9d2 100%);
+}
+
+/* ───────────────────────────── Button (see components/ui/Button.tsx) ───────────────────────────── */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  min-height: 54px;
+  padding: 0.85rem 1.9rem;
+  border-radius: 3px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-transform: uppercase;
+  text-align: center;
+  text-wrap: balance;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform 0.25s var(--ease-velvet),
+    box-shadow 0.4s var(--ease-velvet),
+    opacity 0.4s var(--ease-velvet),
+    filter 0.4s var(--ease-velvet);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.985);
+  filter: brightness(0.94);
+}
+.btn:disabled {
+  opacity: 0.42;
+  filter: saturate(0.6);
+}
+.btn-sm {
+  min-height: 48px;
+  padding: 0.6rem 1.3rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+}
+.btn-full {
+  display: flex;
+  width: 100%;
+}
+/* hairline inner frame */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 1.5px;
+  border: 1px solid currentColor;
+  opacity: 0.28;
+  pointer-events: none;
+}
+/* slow light sweep */
+.btn-sheen::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 34%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+  transform: translateX(-130%) skewX(-18deg);
+  animation: btn-sheen 6.5s var(--ease-velvet) 1.2s infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+.btn:disabled::after {
+  display: none;
+}
+.btn-gold {
+  color: #2a1420;
+  background: linear-gradient(120deg, #b08a50 0%, #e9d1a0 34%, #d7b47b 58%, #a47e45 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 224, 0.7),
+    inset 0 -1px 0 rgba(90, 60, 20, 0.35),
+    0 10px 34px -10px rgba(215, 180, 123, 0.55),
+    0 0 0 1px rgba(255, 236, 200, 0.25);
+}
+.btn-ruby {
+  color: #fff8f0;
+  background: linear-gradient(135deg, #a31442 0%, #850c30 48%, #5a0820 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 190, 205, 0.4),
+    inset 0 -1px 0 rgba(40, 0, 12, 0.5),
+    0 12px 30px -12px rgba(133, 12, 48, 0.65),
+    0 0 0 1px rgba(215, 180, 123, 0.55);
+}
+.btn-ruby::before {
+  border-color: #d7b47b;
+  opacity: 0.55;
+}
+.btn-ruby.btn-sheen::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 220, 228, 0.3), transparent);
+}
+.btn-ghost {
+  color: inherit;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 38%, transparent);
+  font-weight: 500;
+}
+.btn-ghost::before {
+  display: none;
+}
+.btn-ghost:active:not(:disabled) {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+/* ───────────────────────────── QuillFlower / Signature helpers ───────────────────────────── */
+.quill-unfurl {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  animation: quill-unfurl 1.4s var(--ease-velvet) both;
+}
+.signature-write {
+  animation: signature-write 2.2s var(--ease-velvet) both;
+}
+
+/* ───────────────────────────── reduced motion ───────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  .btn-sheen::after {
+    display: none;
+  }
+  .text-gold-foil,
+  .text-ruby-foil {
+    background-position: 30% 0 !important;
+  }
+}
